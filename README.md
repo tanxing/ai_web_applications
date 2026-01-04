@@ -1,0 +1,1 @@
+This project aims to create multiple web applications using Django and AI tools.
