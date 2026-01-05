@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fridge AI - Cooking Suggestions</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f7f6;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .upload-section {
+            border: 2px dashed #3498db;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background-color: #219150;
+        }
+
+        .result-card {
+            margin-top: 30px;
+            padding: 20px;
+            border-left: 5px solid #27ae60;
+            background: #f9f9f9;
+        }
+
+        .loading {
+            display: none;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        img#preview {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>What's in your Fridge?</h1>
+        <p style="text-align: center;">Upload a photo and let Gemini suggest your next meal.</p>
+
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            <div class="upload-section">
+                <input type="file" name="food_photo" id="food_photo" accept="image/*" required
+                    onchange="previewImage(event)">
+                <p>Select a clear photo of your ingredients</p>
+                <img id="preview" alt="Image Preview">
+            </div>
+
+            <div style="text-align: center;">
+                <button type="submit" class="btn" onclick="showLoading()">Analyze Ingredients</button>
+                <p id="loadingText" class="loading">Gemini is looking inside your fridge...</p>
+            </div>
+        </form>
+
+        {% if ingredients %}
+        <div class="result-card">
+            <h2>Detected Ingredients:</h2>
+            <p>{{ ingredients }}</p>
+
+            {% if suggestions %}
+            <h2>Suggested Recipes:</h2>
+            <div>{{ suggestions|linebreaks }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function previewImage(event) {
+            const reader = new FileReader();
+            const preview = document.getElementById('preview');
+            reader.onload = function () {
+                preview.src = reader.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function showLoading() {
+            const fileInput = document.getElementById('food_photo');
+            if (fileInput.files.length > 0) {
+                document.getElementById('loadingText').style.display = 'block';
+            }
+        }
+    </script>
+
+</body>
+
+</html>
