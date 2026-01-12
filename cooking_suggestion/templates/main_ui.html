@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fridge AI - Cooking Suggestions</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f7f6;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .upload-section {
+            border: 2px dashed #3498db;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background-color: #219150;
+        }
+
+        .result-card {
+            margin-top: 30px;
+            padding: 20px;
+            border-left: 5px solid #27ae60;
+            background: #f9f9f9;
+        }
+
+        .loading {
+            display: none;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        img#preview {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>What's in your Fridge?</h1>
+        <p style="text-align: center;">Upload a photo and let Gemini suggest your next meal.</p>
+
+        <form method="post" enctype="multipart/form-data" id="uploadForm" action="{% url 'gemini_inference' %}">
+            {% csrf_token %}
+            <div class="upload-section">
+                <input type="file" name="food_photo" id="food_photo" accept="image/*" required
+                    onchange="previewImage(event)">
+                <p>Upload a clear photo of your fresh produce (e.g., inside your fridge or on the countertop)</p>
+                <img id="preview" alt="Image Preview">
+            </div>
+
+            <div style="text-align: center;">
+                <button type="submit" class="btn" onclick="showLoading()">Analyze Ingredients</button>
+                <p id="loadingText" class="loading">Gemini is looking inside your fridge...</p>
+            </div>
+        </form>
+
+        {% if ingredients %}
+        <div class="result-card">
+            <h2>Detected Ingredients:</h2>
+            <p>{{ ingredients|join:", " }}</p>
+
+            {% if retrieved_recipes %}
+            <h2 style="margin-top: 30px; color: #3498db;">Matched Database Recipes:</h2>
+            <div class="retrieved-container">
+                {% for recipe in retrieved_recipes %}
+                <div class="result-card" style="margin-top: 15px; border-left: 5px solid #3498db; background: #ebf5fb;">
+                    <h3 style="margin-top: 0;">{{ recipe.name }}</h3>
+                    <p><strong>Description:</strong> {{ recipe.description }}</p>
+                    <p style="font-size: 0.9em; color: #7f8c8d;">Match Score: {{ recipe.similarity|floatformat:2 }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if suggested_recipes %}
+            <h2 style="margin-top: 30px; color: #27ae60;">Chef's Final Suggestions (RAG):</h2>
+            <div class="ai-suggestions"
+                style="padding: 20px; background: #fdfefe; border: 1px solid #d5dbdb; border-radius: 5px;">
+                {{ suggested_recipes|linebreaks }}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function previewImage(event) {
+            const reader = new FileReader();
+            const preview = document.getElementById('preview');
+            reader.onload = function () {
+                preview.src = reader.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function showLoading() {
+            const fileInput = document.getElementById('food_photo');
+            if (fileInput.files.length > 0) {
+                document.getElementById('loadingText').style.display = 'block';
+            }
+        }
+    </script>
+
+</body>
+
+</html>

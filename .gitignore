@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Virtual Environment
+.venv/
+
+# Databases
+db.sqlite3
+
+# Environment variables (Secrets)
+.env
+
+# uv specific (optional, but keep the lockfile!)
+.uv/
